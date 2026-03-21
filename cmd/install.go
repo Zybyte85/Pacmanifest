@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Zybyte85/mypm/internal/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -47,6 +48,8 @@ func install(pkg string) error {
 
 	fmt.Printf("Installing %s...\n", pkg)
 
+	fmt.Println(parseInput(pkg))
+
 	f, err := os.OpenFile(filepath.Join(cfgPath, "manifest.pkgs"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("could not open manifest: %w", err)
@@ -60,18 +63,21 @@ func install(pkg string) error {
 	return nil
 }
 
-func parseInput(input string) (pkgName string, version string, isAur bool) {
-	if strings.Contains(input, ":") {
-		if s := strings.Split(input, ":"); s[0] == "aur" {
-			isAur = true
-			pkgName = s[1]
-		}
-	}
-	if strings.Contains(input, "=") {
-		s := strings.Split(input, "=")
-		pkgName = s[0]
-		version = s[1]
+func parseInput(input string) (Package manifest.Package) {
+	fmt.Errorf("hhi")
+	pkg := manifest.Package{}
+
+	if strings.HasPrefix(input, "aur:") {
+		pkg.IsAUR = true
+		input = strings.TrimPrefix(input, "aur:")
 	}
 
-	return "e", "e", false
+	var found bool
+	pkg.Name, pkg.Version, found = strings.Cut(input, "=")
+
+	if !found {
+		pkg.Version = "latest"
+	}
+
+	return pkg
 }
