@@ -4,8 +4,10 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"path/filepath"
 
+	"github.com/Zybyte85/mypm/internal/config"
+	"github.com/Zybyte85/mypm/internal/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +22,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("sync called")
+		readManifest()
 	},
 }
 
@@ -38,18 +40,7 @@ func init() {
 	// syncCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// func getDatabase() error {
-// 	mirrorList, err := os.ReadFile("mirrorlist")
-// 	if err != nil {
-// 		return fmt.Errorf("could not read mirrorlist: %v", err)
-// 	}
-//
-// Get individual mirrors from mirrorlist
-// mirrors := strings.Split(string(mirrorList), "\n")
-
-// for mirror := range mirrors {
-// 	http.Get()
-// }
-
-// return nil
-// }
+func readManifest() {
+	manifestPath := filepath.Join(config.GetConfigPath(), "manifest.pkgs")
+	manifest.ParseManifest(manifestPath)
+}

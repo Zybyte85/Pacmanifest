@@ -3,9 +3,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/Zybyte85/mypm/internal/manifest"
 	"github.com/spf13/cobra"
@@ -41,43 +38,16 @@ func init() {
 	// installCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func install(pkg string) error {
-	if pkg == "" {
+func install(input string) error {
+	if input == "" {
 		return fmt.Errorf("package name cannot be empty")
 	}
 
-	fmt.Printf("Installing %s...\n", pkg)
+	fmt.Printf("Installing %s...\n", input)
 
-	fmt.Println(parseInput(pkg))
+	pkg := manifest.ParseInput(input)
 
-	f, err := os.OpenFile(filepath.Join(cfgPath, "manifest.pkgs"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-	if err != nil {
-		return fmt.Errorf("could not open manifest: %w", err)
-	}
-	defer f.Close()
-
-	if _, err := f.WriteString(pkg + "\n"); err != nil {
-		return fmt.Errorf("could not write to manifest: %w", err)
-	}
+	manifest.AddPackage(pkg)
 
 	return nil
-}
-
-func parseInput(input string) (Package manifest.Package) {
-	fmt.Errorf("hhi")
-	pkg := manifest.Package{}
-
-	if strings.HasPrefix(input, "aur:") {
-		pkg.IsAUR = true
-		input = strings.TrimPrefix(input, "aur:")
-	}
-
-	var found bool
-	pkg.Name, pkg.Version, found = strings.Cut(input, "=")
-
-	if !found {
-		pkg.Version = "latest"
-	}
-
-	return pkg
 }
