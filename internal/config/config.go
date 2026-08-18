@@ -7,5 +7,5 @@ import (
 
 func GetConfigPath() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".mypm")
+	return filepath.Join(home, ".pacmanifest")
 }
