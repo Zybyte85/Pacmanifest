@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// installCmd represents the install command
-var installCmd = &cobra.Command{
-	Use:   "install",
-	Short: "Installs the specified package",
+// addCmd represents the install command
+var addCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Adds the specified package to the manifest",
 	Args:  cobra.MinimumNArgs(1),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -20,7 +20,7 @@ var installCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(installCmd)
+	rootCmd.AddCommand(addCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -34,9 +34,14 @@ func init() {
 }
 
 func install(input string) error {
-	fmt.Printf("Installing %s...\n", input)
-
 	pkg := manifest.ParseInput(input)
 
-	return manifest.AddPackage(pkg)
+	err := manifest.AddPackage(pkg)
+	if err != nil {
+		return fmt.Errorf("could not add '%s' to manifest: %v", pkg.Name, err)
+	}
+
+	fmt.Printf("Added '%s' to manifest. Run 'pacmanifest sync' to install.\n", pkg.Name)
+
+	return nil
 }
