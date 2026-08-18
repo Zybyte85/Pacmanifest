@@ -26,17 +26,7 @@ var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "Reads the manifest and applies changes",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := syncRepos()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		err = installFromManifest()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		Sync()
 	},
 }
 
@@ -53,6 +43,20 @@ func init() {
 	// is called directly, e.g.:
 	// syncCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	syncCmd.Flags().StringVarP(&aurHelper, "aur-helper", "a", "yay", "AUR helper to use")
+}
+
+func Sync() {
+	err := syncRepos()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = installFromManifest()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func installFromManifest() error {

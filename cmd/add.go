@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var sync bool
+
 // addCmd represents the install command
 var addCmd = &cobra.Command{
 	Use:   "add",
@@ -31,6 +33,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// installCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	addCmd.Flags().BoolVarP(&sync, "sync", "s", false, "Sync the manifest after adding")
 }
 
 func install(input string) error {
@@ -42,6 +45,10 @@ func install(input string) error {
 	}
 
 	fmt.Printf("Added '%s' to manifest. Run 'pacmanifest sync' to install.\n", pkg.Name)
+
+	if sync {
+		Sync()
+	}
 
 	return nil
 }
