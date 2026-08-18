@@ -26,7 +26,17 @@ var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "Reads the manifest and applies changes",
 	Run: func(cmd *cobra.Command, args []string) {
-		installFromManifest()
+		err := syncRepos()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		err = installFromManifest()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	},
 }
 
@@ -45,7 +55,7 @@ func init() {
 	syncCmd.Flags().StringVarP(&aurHelper, "aur-helper", "a", "yay", "AUR helper to use")
 }
 
-func installFromManifest() {
+func installFromManifest() error {
 	var pacmanPkgs []string
 	var aurPkgs []string
 	var archivePkgs []manifest.Package
@@ -53,8 +63,7 @@ func installFromManifest() {
 	manifestPath := filepath.Join(config.GetConfigPath(), "manifest.pkgs")
 	pkgs, err := manifest.ParseManifest(manifestPath)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return fmt.Errorf("could not parse manifest: %v", err)
 	}
 	for _, pkg := range pkgs {
 		var latestVersion string
@@ -63,8 +72,7 @@ func installFromManifest() {
 			latestVersion, err = seeLatestVersionOfPackage(pkg.Name)
 
 			if err != nil {
-				fmt.Println(err)
-				continue
+				return fmt.Errorf("could not see latest version of package %s: %v", pkg.Name, err)
 			}
 		}
 
@@ -83,6 +91,8 @@ func installFromManifest() {
 	runInstallCommand(pacmanPkgs, "pacman", []string{"-S", "--noconfirm", "--needed"}, true)
 	runInstallCommand(aurPkgs, aurHelper, []string{"-S", "--noconfirm", "--needed"}, false)
 	archiveInstall(archivePkgs)
+
+	return nil
 }
 
 func seeLatestVersionOfPackage(pkgName string) (string, error) {
@@ -157,7 +167,7 @@ func archiveInstall(pkgs []manifest.Package) error {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("Package $s not found on archive (Status: %d)", pkg.Name, resp.Status)
+			return fmt.Errorf("Package %s not found on archive (Status: %s)", pkg.Name, resp.Status)
 		}
 
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -203,7 +213,6 @@ func archiveInstall(pkgs []manifest.Package) error {
 
 	return nil
 }
-
 func downloadFile(url, dest string) error {
 	out, err := os.Create(dest)
 	if err != nil {
@@ -224,6 +233,19 @@ func downloadFile(url, dest string) error {
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return fmt.Errorf("Error saving file: %v", err)
+	}
+
+	return nil
+}
+
+func syncRepos() error {
+	cmd := exec.Command("sudo", "pacman", "-Sy")
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not sync repositories: %v", err)
 	}
 
 	return nil
