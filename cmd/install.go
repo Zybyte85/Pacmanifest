@@ -15,12 +15,7 @@ var installCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := install(args[0])
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return install(args[0])
 	},
 }
 
@@ -39,15 +34,9 @@ func init() {
 }
 
 func install(input string) error {
-	if input == "" {
-		return fmt.Errorf("package name cannot be empty")
-	}
-
 	fmt.Printf("Installing %s...\n", input)
 
 	pkg := manifest.ParseInput(input)
 
-	manifest.AddPackage(pkg)
-
-	return nil
+	return manifest.AddPackage(pkg)
 }

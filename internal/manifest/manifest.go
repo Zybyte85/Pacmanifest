@@ -73,6 +73,9 @@ func ParseManifest(manifestPath string) ([]Package, error) {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
+		if scanner.Text() == "" || strings.HasPrefix(scanner.Text(), "#") {
+			continue
+		}
 		pkgs = append(pkgs, ParseInput(scanner.Text()))
 	}
 
@@ -80,7 +83,5 @@ func ParseManifest(manifestPath string) ([]Package, error) {
 		return nil, fmt.Errorf("could not read manifest: %w", err)
 	}
 
-	fmt.Println(pkgs)
-
-	return nil, nil
+	return pkgs, nil
 }
