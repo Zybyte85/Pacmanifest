@@ -86,7 +86,6 @@ func ParseManifest(manifestPath string) ([]Package, error) {
 	return pkgs, nil
 }
 
-// TODO: Make this simpler by doing each different thing individually instead of going through each case
 func SaveManifestVersion(pkgs []Package) error {
 	var pkgStr string
 
