@@ -87,7 +87,7 @@ func ParseManifest(manifestPath string) ([]Package, error) {
 }
 
 func SaveManifestVersion(pkgs []Package) error {
-	var pkgStr string
+	var sb strings.Builder
 
 	for _, pkg := range pkgs {
 		pkgLine := pkg.Name
@@ -100,10 +100,11 @@ func SaveManifestVersion(pkgs []Package) error {
 			pkgLine += "=" + pkg.Version
 		}
 
-		pkgStr += pkgLine + "\n"
+		sb.WriteString(pkgLine)
+		sb.WriteByte('\n')
 	}
 
-	err := os.WriteFile(filepath.Join(config.GetConfigPath(), "last_sync.pkgs"), []byte(pkgStr), 0644)
+	err := os.WriteFile(filepath.Join(config.GetConfigPath(), "last_sync.pkgs"), []byte(sb.String()), 0644)
 	if err != nil {
 		return fmt.Errorf("could not write ")
 	}
