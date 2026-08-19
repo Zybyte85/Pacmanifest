@@ -6,7 +6,7 @@ Define the packages you want in a manifest file and let Pacmanifest handle the i
 ## Features
 
 - **Declarative package list** – keep a single manifest (`manifest.pkgs`) that describes the exact set of packages you need.
-- **Easy installs** – running `pacmanifest install` will automatically add packages to the manifest.
+- **Easy manifest management** – running `pacmanifest add` will automatically add packages to the manifest.
 - **Sync with system** – `pacmanifest sync` ensures the system matches the manifest, removing packages that are no longer listed.
 - **AUR Support** – packages from the AUR are supported via `yay`.
 - **Version pinning** – packages can be pinned to a specific version in the manifest, even older ones.
@@ -23,16 +23,16 @@ cd Pacmanifest
 go build -o pacmanifest .
 
 # Create manifest and add a package
-./pacmanifest install git 
+./pacmanifest add git 
 
 # Add packages to the manifest manually
 echo "vim\nhtop" >> ~/.pacmanifest/manifest.pkgs
 
 # Add an AUR package to the manifest
-./pacmanifest install aur:spotify
+./pacmanifest add aur:spotify
 
 # Add an older version of a package to the manifest
-./pacmanifest install cowsay=3.8.2
+./pacmanifest add cowsay=3.8.2
 
 # Install the packages defined in the manifest
 ./pacmanifest sync
@@ -42,7 +42,7 @@ echo "vim\nhtop" >> ~/.pacmanifest/manifest.pkgs
 
 | Command | Description |
 |---------|-------------|
-| `install` | Add a package to the manifest. |
+| `add` | Add a package to the manifest. |
 | `sync`    | Sync the system state with the manifest (install missing, remove extra). |
 
 ## Configuration
