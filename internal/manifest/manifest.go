@@ -85,3 +85,29 @@ func ParseManifest(manifestPath string) ([]Package, error) {
 
 	return pkgs, nil
 }
+
+// TODO: Make this simpler by doing each different thing individually instead of going through each case
+func SaveManifestVersion(pkgs []Package) error {
+	var pkgStr string
+
+	for _, pkg := range pkgs {
+		pkgLine := pkg.Name
+
+		if pkg.IsAUR {
+			pkgLine = "aur:" + pkgLine
+		}
+
+		if pkg.Version != "latest" {
+			pkgLine += "=" + pkg.Version
+		}
+
+		pkgStr += pkgLine + "\n"
+	}
+
+	err := os.WriteFile(filepath.Join(config.GetConfigPath(), "last_sync.pkgs"), []byte(pkgStr), 0644)
+	if err != nil {
+		return fmt.Errorf("could not write ")
+	}
+
+	return nil
+}

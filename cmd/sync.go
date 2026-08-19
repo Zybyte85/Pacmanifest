@@ -52,7 +52,18 @@ func Sync() {
 		return
 	}
 
-	err = installFromManifest()
+	manifestPath := filepath.Join(config.GetConfigPath(), "manifest.pkgs")
+	pkgs, err := manifest.ParseManifest(manifestPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if err := manifest.SaveManifestVersion(pkgs); err != nil {
+		fmt.Printf("Warning: could not save manifest: %v\n", err)
+	}
+
+	err = installFromManifest() // pass parsed packages
 	if err != nil {
 		fmt.Println(err)
 		return
