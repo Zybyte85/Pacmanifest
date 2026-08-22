@@ -17,7 +17,7 @@ var addCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return install(args[0])
+		return add(args[0])
 	},
 }
 
@@ -36,7 +36,7 @@ func init() {
 	addCmd.Flags().BoolVarP(&sync, "sync", "s", false, "Sync the manifest after adding")
 }
 
-func install(input string) error {
+func add(input string) error {
 	pkg := manifest.ParseInput(input)
 
 	err := manifest.AddPackage(pkg)

@@ -53,4 +53,4 @@ echo "vim\nhtop" >> ~/.pacmanifest/manifest.pkgs
 
 Feel free to open issues or submit pull requests.
 
-Pacmanifest is still in alpha. Some things, such as uninstalling packages that are removed from the manifest, are not yet supported, but planned.
+Pacmanifest is still in alpha. Some things are not yet supported, but planned.

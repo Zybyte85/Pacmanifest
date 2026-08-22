@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/Zybyte85/mypm/internal/config"
@@ -53,10 +54,27 @@ func Sync() {
 	}
 
 	manifestPath := filepath.Join(config.GetConfigPath(), "manifest.pkgs")
+	lastSyncPath := filepath.Join(config.GetConfigPath(), "last_sync.pkgs")
+
 	pkgs, err := manifest.ParseManifest(manifestPath)
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+
+	lastSyncPkgs, err := manifest.ParseManifest(lastSyncPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	removedPkgs := findRemovedPkgs(pkgs, lastSyncPkgs)
+	if len(removedPkgs) > 0 {
+		err := uninstallPackages(removedPkgs)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 
 	if err := manifest.SaveManifestVersion(pkgs); err != nil {
@@ -68,6 +86,7 @@ func Sync() {
 		fmt.Println(err)
 		return
 	}
+
 }
 
 func installFromManifest() error {
@@ -228,6 +247,34 @@ func archiveInstall(pkgs []manifest.Package) error {
 
 	return nil
 }
+
+func uninstallPackages(pkgs []string) error {
+	runInstallCommand(pkgs, "pacman", []string{"-Rns", "--noconfirm"}, true)
+	return nil
+}
+
+func findRemovedPkgs(currentPkgs, lastSyncPkgs []manifest.Package) []string {
+	if slices.Equal(currentPkgs, lastSyncPkgs) {
+		fmt.Println("Manifest already is up to date.")
+		return nil
+	}
+
+	var removedPkgs []string
+
+	// Find differences between currentPkgs and lastSyncPkgs
+	mb := make(map[string]struct{})
+	for _, pkg := range currentPkgs {
+		mb[pkg.Name] = struct{}{}
+	}
+	for _, pkg := range lastSyncPkgs {
+		if _, found := mb[pkg.Name]; !found {
+			removedPkgs = append(removedPkgs, pkg.Name)
+		}
+	}
+
+	return removedPkgs
+}
+
 func downloadFile(url, dest string) error {
 	out, err := os.Create(dest)
 	if err != nil {
