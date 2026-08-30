@@ -21,6 +21,7 @@ import (
 )
 
 var aurHelper string
+var noConfirm bool
 
 // syncCmd represents the sync command
 var syncCmd = &cobra.Command{
@@ -56,7 +57,7 @@ func Sync() {
 	manifestPath := filepath.Join(config.GetConfigPath(), "manifest.pkgs")
 	lastSyncPath := filepath.Join(config.GetConfigPath(), "last_sync.pkgs")
 
-	pkgs, err := manifest.ParseManifest(manifestPath)
+	addedPkgs, err := manifest.ParseManifest(manifestPath)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -68,7 +69,7 @@ func Sync() {
 		return
 	}
 
-	removedPkgs := findRemovedPkgs(pkgs, lastSyncPkgs)
+	removedPkgs := findRemovedPkgs(addedPkgs, lastSyncPkgs)
 	if len(removedPkgs) > 0 {
 		err := uninstallPackages(removedPkgs)
 		if err != nil {
@@ -77,7 +78,12 @@ func Sync() {
 		}
 	}
 
-	if err := manifest.SaveManifestVersion(pkgs); err != nil {
+	if !confirmPromptDiff(addedPkgs, removedPkgs, noConfirm) {
+		fmt.Println("Aborted.")
+		return
+	}
+
+	if err := manifest.SaveManifestVersion(addedPkgs); err != nil {
 		fmt.Printf("Warning: could not save manifest: %v\n", err)
 	}
 
@@ -87,6 +93,33 @@ func Sync() {
 		return
 	}
 
+}
+
+func confirmPromptDiff(addedPkgs []manifest.Package, removedPkgs []string, noConfirm bool) bool {
+	fmt.Println("The following changes will be applied:")
+	for _, pkg := range addedPkgs {
+		fmt.Printf("  + %s", pkg.Name)
+		if pkg.Version != "latest" {
+			fmt.Printf(" (%s)", pkg.Version)
+		}
+		fmt.Println()
+	}
+	for _, pkg := range removedPkgs {
+		fmt.Println("  -", pkg)
+	}
+
+	if noConfirm {
+		return true
+	}
+
+	var confirm string
+	fmt.Print("Do you want to continue? [Y/n]: ")
+	fmt.Scanln(&confirm)
+
+	confirm = strings.TrimSpace(strings.ToLower(confirm))
+
+	// Default to "y" if no input is provided
+	return confirm == "" || confirm == "y" || confirm == "yes"
 }
 
 func installFromManifest() error {
